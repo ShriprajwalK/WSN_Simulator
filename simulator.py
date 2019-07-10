@@ -11,6 +11,8 @@
 
 # TODO: Implement hexagonal model(reliable) and lifetime model
 # => Hard? Need a general formulae for coordinates
+
+# TODO
 import logging
 
 logging.basicConfig(filename="newfile.log",
@@ -19,11 +21,12 @@ logging.basicConfig(filename="newfile.log",
 
 try:
     import matplotlib.pyplot as plt
-    # import matplotlib.patches as mpatches
     import numpy as np
     import operator
     # import time
     import random
+    import pandas as pd
+    import sys
 
 except Exception:
     print("Dependencies not installed")
@@ -51,6 +54,7 @@ class Node(object):
         self.y = y
         self.range = node_range
         self.battery = battery
+        self.type = type
 
         self.in_range_ids = []
         self.in_range_nodes = []
@@ -97,9 +101,11 @@ class Node(object):
         return initial_value - self.battery
 
     def transmit(self, packet):
-        """Transmit a packet to the next node with highest priority."""
-        # node.transmit(packet) transmits a packet to
-        # the node with the highest priority.
+        """Transmit a packet to the next node with highest priority.
+
+        node.transmit(packet) transmits a packet to
+        the node with the highest priority.
+        """
         self.battery_consumed_for_packet(packet)
         if self.is_healthy == 1:
             if packet.type == 100:
@@ -129,7 +135,7 @@ class Node(object):
     def receive(self, packet):
         """Receive a packet from another node."""
         if packet.type == 101:
-            print(packet.route_id)
+            # print(packet.route_id)
             return 0
         elif packet.type == 100:
             self.transmit(Packet(101, self.id, self, 3, "ack",
@@ -204,22 +210,24 @@ class Sensor(object):
     Different kinds
     """
 
-    def __int__(self, name=None):
-        """Inititialise sensor values."""
+    def __init__(self, name=None, parameter=None,
+                 available_sensors=None):
+        """Inititialise sensor details."""
         self.name = name
-        if self.name in ["Temperature", "Humidity", "DHT11", "DHT22"]:
-            self.sensed_value = {"temp": random.randint(0, 50),
-                                 "humidity": random.randint(20, 90)}
-            logging.info("""temp value is measured in Celsius and humidity is
-                            measured in percentage""")
-            return self.sensed_value
-        if self.name == "Pressure" or self.name == "Barometric":
-            # returns pressure in hPa
-            self.sensed_value = {"pressure": random.randint(300, 1100)}
-            logging.info("pressure value is measured in hPa")
-            return self.sensed_value
-        if self.name == "":
-            pass
+        self.parameter = parameter
+        if available_sensors is None:
+            print("No available sensors")
+        else:
+            self.details = available_sensors.loc[name, :]
+            self.parameter = self.details[1]
+            self.minimum = self.details[2]
+            self.maximum = self.details[3]
+            self.units = self.details[4]
+            self.power_consumed = self.details[5]
+
+    def sense_value(self):
+        """Generate random data in sensiog range."""
+        return str(random.randint(self.minimum, self.maximum)) + self.units
 
 
 class Obstacle(object):
@@ -233,6 +241,64 @@ class Obstacle(object):
         self.property = obstacle_property
 
 
+class Network(object):
+    """Simulate the network using everything else in the code.
+
+    Network definition, initialising and lifetime etcetra are calculated.
+    """
+
+    def __init__(self, length_of_area, breadth_of_area, model=None,
+                 node_properties=None, node_id=None, x=None, y=None):
+        """Init Network. Defining the network and stuff."""
+        self.length_of_area = length_of_area
+        self.breadth_of_area = breadth_of_area
+        self.model = model
+        self.node_properties = node_properties
+        self.node_id = node_id
+        self.x = x
+        self.y = y
+
+        self.node_list = []
+
+    def define(self):
+        """Define a network. Returns a node_list."""
+        if self.model is None:
+            self.number_of_nodes = len(self.node_id)
+            for i in range(self.number_of_nodes):
+                self.node_list.append(Node(self.node_id[i], self.x[i],
+                                           self.y[i], self.node_properties[1]))
+                # Appending the nodes to the list
+
+        elif self.model == "low latency model":
+            self.node_list = low_latency_model(self.node_properties[1],
+                                               self.length_of_area,
+                                               self.breadth_of_area)
+            for node in self.node_list:
+                node.type = self.node_properties[0]
+
+        return self.node_list
+
+    def initialize(self):
+        """Do these as soon as a network is defined."""
+        for node in self.node_list:
+            node.broadcast(node_list)
+        in_sink_range = self.node_list[-1].broadcast(node_list[-2::-1])
+        for node in in_sink_range:
+            node.in_range_ids.append(0)
+            node.in_base_range = 1
+
+        return self.node_list
+
+    def is_alive(self):
+        """Check if the network is alive."""
+        alive = False
+        for node in self.node_list:
+            if node.in_base_range == 1:
+                alive = alive or True
+
+        return alive
+
+
 def distance(node1, node2):
     """Find the distance between node1 and node2."""
     return (node1.x - node2.x)**2 + (node1.y - node2.y)**2
@@ -244,34 +310,6 @@ def distance_of_nodes(node_list):
     for node in node_list:
         distance_dict[node] = distance(node_list[-1], node)
     return distance_dict
-
-
-def define_network(length_of_area, breadth_of_area,
-                   node_range, model=None, node_id=None, x=None, y=None):
-    """Init network. Defining the network and stuff."""
-    node_list = []
-
-    if model is None:
-        number_of_nodes = len(node_id)
-        for i in range(number_of_nodes):
-            node_list.append(Node(id[i], x[i], y[i], node_range))
-            # Appending the nodes to the list
-
-    if model == "low_latency_model":
-        node_list = low_latency_model(node_range, length_of_area,
-                                      breadth_of_area)
-
-    return node_list
-
-
-def initialize_network(node_list):
-    """Start your network and stuff."""
-    for node in node_list:
-        node.broadcast(node_list)
-    in_sink_range = node_list[-1].broadcast(node_list[-2::-1])
-    for node in in_sink_range:
-        node.in_range_ids.append(0)
-        node.in_base_range = 1
 
 
 def draw_packets(packet_list):
@@ -338,12 +376,11 @@ def low_latency_model(node_range, length_of_area, breadth_of_area):
             node_list.append(Node(node_id, i * initial_value,
                                   j * initial_value, node_range))
             node_id += 1
-    print("Num of nodes required for reasonable latency is", len(node_list))
     return node_list
 
 
 def sort_route(distance_dict, node_list):
-    """Sort node.in_range of node_list according to increasing distance from sink.
+    """Sort node.in_range of node according to increasing distance from sink.
 
     distance_dict has distances of each node from the sink.
     """
@@ -367,14 +404,21 @@ def sort_route(distance_dict, node_list):
         node.routing_priority_ids = sorted_by_ids
 
 
-def transmit_packet(node, packet):
+def transmit_packet(packet):
     """Transmit packet from node to the base station."""
+    node = packet.from_node
     while node.in_base_range != 1:
         node.transmit(packet)
         node = node.routing_priority_nodes[0][0]
 
     else:  # Checking if the node is in base range
+
         packet.route_id.append(0)
+
+
+def get_sensors(csv="Sensor Data.csv"):
+    """Get all existing sensors from the csv."""
+    return pd.read_csv(csv)
 
 
 def get_all_sensor_values(node_list):
@@ -384,33 +428,79 @@ def get_all_sensor_values(node_list):
             print(sensor.sensed_value)
 
 
-length_of_area = 100
-breadth_of_area = 100
+def mote_type(budget, model_type, length_of_area, breadth_of_area):
+    """Decide which mote to use depending on budget."""
+    if model_type == "low latency model":
+        node_list1 = low_latency_model(100, length_of_area, breadth_of_area)
+        node_list2 = low_latency_model(125, length_of_area, breadth_of_area)
+        node_list3 = low_latency_model(150, length_of_area, breadth_of_area)
+    checks = [False, False, False]
+    print(len(node_list3) * 7700)
+    print(len(node_list2) * 6000)
+    print(len(node_list1) * 800)
+    if len(node_list3) * 7700 <= budget:
+        node_type = ["Zolertia Z1", 150]  # Indoor range = 60
+        checks[0] = True
+    elif len(node_list2) * 6000 <= budget:
+        node_type = ["Sky mote", 125]  # Indoor range = 50
+        checks[1] = True
+    elif len(node_list1) * 800 <= budget:
+        node_type = ["Arduino", 100]  # Indoor range = 20-25
+        checks[2] = True
+    else:
+        print("Not enough budget")
+        sys.exit()
+
+    if checks[0] is True:
+        return ["Zolertia Z1", 150]
+    elif checks[0] is False and checks[1] is True:
+        return ["Sky mote", 125]
+    else:
+        return ["Arduino", 100]
+
+    return node_type
+
+
+budget = 2160000
+length_of_area = 500
+breadth_of_area = 500
+model_type = "low latency model"
 
 node_id = [1, 2, 3, 4]
 x = [20, 10, 15, 20]  # x coordinate of the nodes
 y = [20, 5, 15, 10]  # y coordinate of the nodes
-node_range = 27  # Range of the nodes
 packet_list = []  # List containing all the packets active in the network
 
 # Making a list that contains all the nodeslen(packet.route_node))
-node_list = define_network(length_of_area, breadth_of_area, node_range,
-                           model="low_latency_model")
+node_props = mote_type(budget, model_type, length_of_area, breadth_of_area)
+
+network = Network(length_of_area, breadth_of_area,
+                  model=model_type, node_properties=node_props)
+
+node_list = network.define()
 # Making a sink
-sink = BaseStation(0, length_of_area / 3, breadth_of_area / 3, node_range)
+
+sink = BaseStation(0, length_of_area / 2, breadth_of_area / 2, node_props[1])
 
 node_list.append(sink)
 
-initialize_network(node_list)
-
+node_list = network.initialize()
 distance_dict = distance_of_nodes(node_list)
 sort_route(distance_dict, node_list)
 
 for i in range(len(node_list)):
     packet_list.append(Packet(100, i + 1, node_list[i], 15, "Shreyashoe"))
 
-test_packet = Packet(100, 36, node_list[35], 15, "Sensor value")
-transmit_packet(test_packet.from_node, test_packet)
+test_packet = Packet(100, 1, node_list[0], 15, "Sensor value")
+
+transmit_packet(test_packet)
 print(test_packet.route_id)
+
+sensor_list = get_sensors()
+# print(sensors)
+sensor_list = sensor_list.set_index("Name", drop=False)
+sensor = Sensor("DHT 11_T", "Temperature", sensor_list)
+print(sensor.sense_value())
+
 # Plot at the end
 draw_figure(length_of_area, breadth_of_area, node_list)

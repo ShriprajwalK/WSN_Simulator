@@ -1,10 +1,8 @@
-2019-07-03 15:39:58,273 36 battery 89
-2019-07-03 15:39:58,273 29 battery 97
-2019-07-03 15:39:58,273 29 battery 86
-2019-07-03 15:39:58,274 22 battery 97
-2019-07-03 15:39:58,274 22 battery 86
-2019-07-03 15:39:58,274 15 battery 99
-2019-07-03 15:39:59,249 update_title_pos
-2019-07-03 15:39:59,310 findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=10.0 to DejaVu Sans ('/home/the_daemon_lord/.local/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
-2019-07-03 15:39:59,454 findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=12.0 to DejaVu Sans ('/home/the_daemon_lord/.local/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
-2019-07-03 15:39:59,476 update_title_pos
+2019-07-10 15:41:42,982 1 battery -237
+2019-07-10 15:41:42,982 7 battery 32
+2019-07-10 15:41:42,982 7 battery -304
+2019-07-10 15:41:42,982 13 battery 91
+2019-07-10 15:41:43,406 update_title_pos
+2019-07-10 15:41:43,449 findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=10.0 to DejaVu Sans ('/home/the_daemon_lord/.local/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
+2019-07-10 15:41:43,543 findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=12.0 to DejaVu Sans ('/home/the_daemon_lord/.local/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
+2019-07-10 15:41:43,563 update_title_pos

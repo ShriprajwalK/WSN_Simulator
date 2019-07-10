@@ -1,0 +1,26 @@
+Name, Parameter Sensed,Minimum Reading,Maximum Reading,Units,Power Consumption (Max)
+DHT 11_T,Temperature,0,50,°C,1.65 mW
+DHT 11_H,Humidity,20,90,%,1.65 mW
+DHT 22_T,Temperature,-40,80,°C,1.65 mW
+DHT 22_H,Humidity,0,100,%,1.65mW
+BMP085,Barometric Pressure,300,1100,hPa,3.6mW
+MQ-3,Alcohol Gas,0.05,10,mg/L alcohol,825mW
+MQ-4,Natural Gas/Methane,200,10000,ppm,900mW
+CCS811_CO2,eCO2 concentration,400,8192,ppm,60 mW
+CCS811_TVOC,TVOC concentration,0,1187,ppb,60 mW
+SW-520D,Tilt,0,15,mA,75mW
+HC-SR501,PIR,0,3.3,V,325mW
+HC-SR04,Distance,2,80,cm,75mW
+LM35,Temperature,-55,150,°C,15.05mW
+A101 ,Force,0,44,N,3.125mW
+MB1010 ,Rangefinder,15,645,cm,11mW
+LM393 ,Flame/Light Source,760,1100,nm,100mW
+MQ9,"Carbon Monoxide, Methane, LPG",0,5,V,750mW
+YF-S201,Water Flow Measurement,1,30,litres/minute,75mW
+MPX5010DP ,Pressure,0,10,kPa,52.5mW
+RCWL-0516,Microwave Radar,5,9,m,150mW
+GYML8511 ,UV Light Sensor,280,390,nm,0.95mW
+HMC5883L,3 axis digital compass,-8,8,gauss,0.36mW
+MPU-9265,Magnetic field,-4.8,4.8,mT,13.32mW
+TTP223 ,Touch,0,50,pF,0.0165mW
+GT-511C3,Fingerprint,0,450,dpi,780mW
