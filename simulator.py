@@ -461,7 +461,7 @@ def mote_type(budget, model_type, length_of_area, breadth_of_area):
     return node_type
 
 
-budget = 2160000
+budget = 216000
 length_of_area = 500
 breadth_of_area = 500
 model_type = "low latency model"
@@ -491,13 +491,12 @@ sort_route(distance_dict, node_list)
 for i in range(len(node_list)):
     packet_list.append(Packet(100, i + 1, node_list[i], 15, "Shreyashoe"))
 
-test_packet = Packet(100, 1, node_list[0], 15, "Sensor value")
+test_packet = Packet(100, 5, node_list[6], 15, "Sensor value")
 
 transmit_packet(test_packet)
 print(test_packet.route_id)
 
 sensor_list = get_sensors()
-# print(sensors)
 sensor_list = sensor_list.set_index("Name", drop=False)
 sensor = Sensor("DHT 11_T", "Temperature", sensor_list)
 print(sensor.sense_value())
