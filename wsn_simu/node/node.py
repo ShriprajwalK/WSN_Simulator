@@ -25,10 +25,10 @@ class Node(object):
         self.in_range_nodes = []
 
         self.in_base_range = 0
-        if random.random() * 3 > 1:
-            self.is_healthy = 1
-        else:
-            self.is_healthy = 0
+        # if random.random() * 9.5 > 1:
+        self.is_healthy = 1
+        # else:
+        # self.is_healthy = 0
         self.routing_priority_nodes = []
         self.routing_priority_ids = []
 
@@ -52,7 +52,7 @@ class Node(object):
         Instead of O(n^2), do something more efficient
         """
         for node in node_list:
-            if distance(self, node) <= (self.range)**2:
+            if distance_bw_nodes(self, node) <= (self.range)**2:
                 # Checking distances of each node
                 if node.is_healthy == 1 and node not in self.in_range_nodes:
                     self.in_range_ids.append(node.id)
@@ -63,7 +63,7 @@ class Node(object):
         """Use properties of the packet like size etc.to affect the battery."""
         initial_value = self.battery
         try:
-            dist = distance(self, self.routing_priority_nodes[0][0])
+            dist = distance_bw_nodes(self, self.routing_priority_nodes[0][0])
             self.battery -= 0.001 * packet.message_size * dist
             logging.info("%d battery %d", self.id, self.battery)
 
@@ -71,7 +71,7 @@ class Node(object):
             print("Nothing in range")
         return initial_value - self.battery
 
-    def transmit(self, packet):
+    def transmit(self, packet, model=None):
         """Transmit a packet to the next node with highest priority.
 
         node.transmit(packet) transmits a packet to
@@ -92,6 +92,8 @@ class Node(object):
                         node_to.count_receiving_from += 1
 
                     node_to.receive(packet)
+                    if model == "high lifetime model":
+                        self.routing_priority_nodes
                     packet.route_id.append(node_to.id)
                     packet.route_node.append(node_to)
                     return node_to
@@ -101,6 +103,7 @@ class Node(object):
                 packet.destination.receive(packet)
 
         else:
+            node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))
             return 0
 
     def receive(self, packet):
@@ -148,6 +151,6 @@ class BaseStation(Node):
         self.range = node_range
 
 
-def distance(node1, node2):
+def distance_bw_nodes(node1, node2):
     """Find the distance between node1 and node2."""
     return (node1.x - node2.x)**2 + (node1.y - node2.y)**2
