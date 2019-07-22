@@ -93,7 +93,8 @@ class Node(object):
 
                     node_to.receive(packet)
                     if model == "high lifetime model":
-                        self.routing_priority_nodes
+                        self.routing_priority_nodes = self.routing_priority_nodes[1::] + self.routing_priority_nodes[0]
+                        self.routing_priority_ids = self.routing_priority_ids[1::] + self.routing_priority_ids[0]
                     packet.route_id.append(node_to.id)
                     packet.route_node.append(node_to)
                     return node_to

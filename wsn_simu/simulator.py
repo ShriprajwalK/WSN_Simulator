@@ -192,13 +192,13 @@ def low_latency_model(node_range, length_of_area, breadth_of_area):
     num_nodes_along_length = int(length_of_area / initial_value)
     num_nodes_along_breadth = int(breadth_of_area / initial_value)
 
-    for i in range(num_nodes_along_length + 1):
-        for j in range(num_nodes_along_breadth + 1):
+    for i in range(num_nodes_along_length + 1): # + 1
+        for j in range(num_nodes_along_breadth + 1): # + 1
             node_list.append(Node(node_id, i * initial_value,
                                   j * initial_value, node_range))
             node_id += 1
     # Making a sink
-    sink = BaseStation(0, length_of_area / 2, breadth_of_area / 2, node_range)
+    sink = BaseStation(0, node_list[28].x, node_list[28].y, node_range)
     node_list.append(sink)
     return node_list
 
@@ -296,11 +296,11 @@ def sort_route(distance_dict, node_list):
         node.routing_priority_ids = sorted_by_ids
 
 
-def transmit_packet(packet):
+def transmit_packet(packet, model=None):
     """Transmit packet from node to the base station."""
     node = packet.from_node
     while node.in_base_range != 1:
-        node.transmit(packet)
+        node.transmit(packet, model=model)
         node = node.routing_priority_nodes[0][0]
 
     else:  # Checking if the node is in base range
@@ -356,7 +356,13 @@ def find_latency(packet_list):
             print(worst_case,)
         worst_case_list.append(worst_case)
         print((worst_case, "NYAN"))
-    print(max(worst_case_list))
+    i = worst_case_list.index(max(worst_case_list))
+    case_sum = 0
+    for case in worst_case_list:
+        case_sum += case
+    print(case_sum/len(worst_case_list), "AVERAGE")
+
+    print(max(worst_case_list), packet_list[i].route_id)
     # return maximum
 
 
@@ -418,7 +424,9 @@ def start():
     budget = 21600000000
     length = 800
     breadth = 800
-    model_type = "high lifetime model"
+    # model_type = "high lifetime model"
+    # model_type = "low latency model"
+    model_type = "high reliability model"
 
     # node_id = [1, 2, 3, 4]
     # x = [20, 10, 15, 20]  # x coordinate of the nodes
@@ -470,7 +478,7 @@ def start():
     #for node in network.in_sink_range:
     #    print(node.id, end=' ')
 
-    find_latency(packet_list)
+    # find_latency(packet_list)
 
     draw_figure(length, breadth, node_list, True)
 
