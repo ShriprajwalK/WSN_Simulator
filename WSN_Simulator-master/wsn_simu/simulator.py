@@ -201,6 +201,7 @@ def low_latency_model(node_range, length_of_area, breadth_of_area):
     # Making a sink
     sink = BaseStation(0, node_list[28].x, node_list[28].y, node_range)
     node_list.append(sink)
+
     return node_list
 
 
@@ -240,6 +241,7 @@ def high_lifetime_model(node_range, length_of_area, breadth_of_area):
                 ct += 1
         if ct == 1:
             actual_node_list.append(node)
+    print(actual_node_list[-1].id)
 
     # print(len(actual_node_list), 'HEEHEHE')
     # print(len(node_list), 'LOLO')
@@ -297,12 +299,14 @@ def sort_route(distance_dict, node_list):
         node.routing_priority_ids = sorted_by_ids
 
 
-def transmit_packet(packet, model=None):
+def transmit_packet(packet):
     """Transmit packet from node to the base station."""
     node = packet.from_node
     while node.in_base_range != 1:
-        node.transmit(packet, model=model)
+        node.transmit(packet)
         node = node.routing_priority_nodes[0][0]
+        if node in packet.route_node:
+            break
 
     else:  # Checking if the node is in base range
 
@@ -409,6 +413,7 @@ def delete_node(node_index, network):
     for node in node_list:
         node.broadcast(node_list)
     distance_dict = distance_of_nodes(node_list)
+    print("EEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
     sort_route(distance_dict, node_list)
 
     network.node_list = node_list
@@ -440,8 +445,8 @@ def start():
     budget = 21600000000
     length = 800
     breadth = 800
-    # model_type = "high lifetime model"
-    model_type = "low latency model"
+    model_type = "high lifetime model"
+    # model_type = "low latency model"
     # model_type = "high reliability model"
 
     # node_id = [1, 2, 3, 4]
@@ -468,17 +473,17 @@ def start():
     sort_route(distance_dict, node_list)
 
     ct = 1
-    for i in range(len(node_list)):
+    for i in range(len(node_list[:-1:])):
         if node_list[i].is_healthy == 1:
             packet_list.append(Packet(100, node_list[i].id, node_list[i],
                                        15, "MIL"))
             ct += 1
     # print(ct)
 
-    test_packet = Packet(100, 5, node_list[4], 15, "Sensor value")
+
     for test_packet in packet_list:
-        transmit_packet(test_packet)
-        # print(test_packet.route_id, "HAHAHA")
+       transmit_packet(test_packet)
+       print(test_packet.route_id, "HAHAHA")
     #    delay=calculate_delay_1(test_packet.route_id,node_props)
     #    print(delay)
     #sensor_list = get_sensors("wsn_simu/Sensor Data.csv")
@@ -491,11 +496,6 @@ def start():
 
     #for node in network.in_sink_range:
     #    print(node.id, end=' ')
-
-    # del node_list[44]
-    #
-    # network.node_list = node_list
-    # node_list = network.initialize()
     #
     # for node in node_list:
     #     node.broadcast(node_list)
@@ -523,9 +523,11 @@ def start():
     #     print(node.count_receiving_from, "count")
     #     print([i for i in node.receiving_from])
     #
-    # print(node_list[0].id, node_list[0].routing_priority_ids)
-    while network.is_alive:
-        node_list, network = calculate_battery(packet_list, node_list, network)
+    print(node_list[0].id, node_list[0].routing_priority_ids)
+    # while network.is_alive():
+    node_list, network = calculate_battery(packet_list, node_list, network)
+    node_list, network = calculate_battery(packet_list, node_list, network)
+    node_list, network = calculate_battery(packet_list, node_list, network)
     print(len(node_list))
     print(node_list[-2].routing_priority_ids)
     print(packet_list[-2].route_id)

@@ -99,16 +99,18 @@ class Node(object):
                         node_to.count_receiving_from += 1
 
                     node_to.receive(packet)
-                    if model == "high lifetime model":
-                        self.routing_priority_nodes = self.routing_priority_nodes[1::] + self.routing_priority_nodes[0]
-                        self.routing_priority_ids = self.routing_priority_ids[1::] + self.routing_priority_ids[0]
+                    # if model == "high lifetime model":
+                    #     self.routing_priority_nodes = self.routing_priority_nodes[1::] + self.routing_priority_nodes[0]
+                    #     self.routing_priority_ids = self.routing_priority_ids[1::] + self.routing_priority_ids[0]
                     packet.route_id.append(node_to.id)
                     packet.route_node.append(node_to)
+                    print(node_to.id)
                     return node_to
             elif packet.type == 101:
                 # packet.route_id.append(self.id)
                 # packet.route_node.append(self)
                 packet.destination.receive(packet)
+                return 0
 
         else:
             node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))

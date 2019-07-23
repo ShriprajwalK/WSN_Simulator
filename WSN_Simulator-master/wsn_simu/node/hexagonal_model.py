@@ -262,8 +262,8 @@ def main():
     x1 = []
     y1 = []
 
-    p = int(calculate_p(L, r))
-    o = int(calculate_o(B, r))
+    p = int(calculate_p(B, r))
+    o = int(calculate_o(L, r))
     G = hexagonal_lattice_graph(o, p)
     x, y = plot_hex_mesh(G)
 
