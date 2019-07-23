@@ -86,10 +86,12 @@ class Node(object):
         the node with the highest priority.
         """
         if self.is_healthy == 1:
+            for node in packet.route_node:
+                if packet.route_node.count(node) > 1:
+                    return 0
             if packet.type == 100:
                 if self.in_base_range == 1:
                     packet.route_id.append(0)
-                    return 0
                 else:
                     node_to = self.routing_priority_nodes[0][0]
                     if self not in node_to.receiving_from:
@@ -104,17 +106,17 @@ class Node(object):
                     #     self.routing_priority_ids = self.routing_priority_ids[1::] + self.routing_priority_ids[0]
                     packet.route_id.append(node_to.id)
                     packet.route_node.append(node_to)
-                    print(node_to.id)
-                    return node_to
+                    return 65
             elif packet.type == 101:
                 # packet.route_id.append(self.id)
                 # packet.route_node.append(self)
                 packet.destination.receive(packet)
-                return 0
+                return 65
 
         else:
-            node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))
-            return 0
+            # node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))
+            print(self.id, "node is dead")
+            return 65
 
     def receive(self, packet):
         """Receive a packet from another node."""

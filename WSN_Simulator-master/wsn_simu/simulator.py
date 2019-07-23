@@ -241,8 +241,11 @@ def high_lifetime_model(node_range, length_of_area, breadth_of_area):
                 ct += 1
         if ct == 1:
             actual_node_list.append(node)
-    print(actual_node_list[-1].id)
 
+    node_id = 1
+    for node in actual_node_list[:-1:]:
+        node.id = node_id
+        node_id += 1
     # print(len(actual_node_list), 'HEEHEHE')
     # print(len(node_list), 'LOLO')
 
@@ -303,9 +306,9 @@ def transmit_packet(packet):
     """Transmit packet from node to the base station."""
     node = packet.from_node
     while node.in_base_range != 1:
-        node.transmit(packet)
+        a = node.transmit(packet)
         node = node.routing_priority_nodes[0][0]
-        if node in packet.route_node:
+        if a == 0:
             break
 
     else:  # Checking if the node is in base range
@@ -343,7 +346,7 @@ def find_latency(packet_list):
     for packet in packet_list:
         length_of_route.append(len(packet.route_id))
         # print(packet.route_id)
-    print(length_of_route, "LEEEEEEEEEEEEEEEEEEEEE")
+    print(length_of_route)# , "LEEEEEEEEEEEEEEEEEEEEE")
 
     maximum = max(length_of_route)
     print(maximum)
@@ -353,6 +356,16 @@ def find_latency(packet_list):
 
     print(max_length_packets)
     return maximum
+
+
+def generate_packets(node_list):
+    packet_list = []
+
+    for i in range(len(node_list[:-1:])):
+        if node_list[i].is_healthy == 1:
+            packet_list.append(Packet(100, node_list[i].id, node_list[i],
+                                       15, "MIL"))
+    return packet_list
 
 
 def mote_type(budget, model_type, length_of_area, breadth_of_area):
@@ -413,9 +426,7 @@ def delete_node(node_index, network):
     for node in node_list:
         node.broadcast(node_list)
     distance_dict = distance_of_nodes(node_list)
-    print("EEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
     sort_route(distance_dict, node_list)
-
     network.node_list = node_list
 
     return node_list, network
@@ -425,8 +436,6 @@ def calculate_battery(packet_list, node_list, network):
     below_10_percent = []
     for packet in packet_list:
         for node in packet.route_node:
-            if node.id == 21:
-                print(packet.route_node[0].id, "LOL")
             # Replace 2 with Akshobya value(put as parameter in node)
             node.battery -= 10
     for node in node_list:
@@ -436,6 +445,7 @@ def calculate_battery(packet_list, node_list, network):
     for node in below_10_percent:
         node.is_healthy = 0
         node_list, network = delete_node(node_list.index(node), network)
+    print("LOL2")
 
     return node_list, network
 
@@ -445,6 +455,8 @@ def start():
     budget = 21600000000
     length = 800
     breadth = 800
+
+    # model_type = None
     model_type = "high lifetime model"
     # model_type = "low latency model"
     # model_type = "high reliability model"
@@ -461,7 +473,6 @@ def start():
                       node_properties=node_props)
 
     node_list = network.define()
-    # print(node_list)
 
     node_list = network.initialize()
     for node in node_list:
@@ -472,31 +483,14 @@ def start():
     distance_dict = distance_of_nodes(node_list)
     sort_route(distance_dict, node_list)
 
-    ct = 1
-    for i in range(len(node_list[:-1:])):
-        if node_list[i].is_healthy == 1:
-            packet_list.append(Packet(100, node_list[i].id, node_list[i],
-                                       15, "MIL"))
-            ct += 1
-    # print(ct)
+    for node in node_list:
+        print(node.id, end = " ")
+    print()
+    print("lengthhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", len(node_list))
 
-
-    for test_packet in packet_list:
-       transmit_packet(test_packet)
-       print(test_packet.route_id, "HAHAHA")
-    #    delay=calculate_delay_1(test_packet.route_id,node_props)
-    #    print(delay)
     #sensor_list = get_sensors("wsn_simu/Sensor Data.csv")
     #sensor_list = sensor_list.set_index("Name", drop=False)
-    #sensor = Sensor("DHT 11_T", "Temperature", sensor_list)
-    #print(sensor.sense_value())
-    # # print(node_list[4].in_range_ids)
-    #
-    # # Plot at the end
-
-    #for node in network.in_sink_range:
-    #    print(node.id, end=' ')
-    #
+    #sensor = Sensor("DHT 11_T", "Temperature", sensor_list)#
     # for node in node_list:
     #     node.broadcast(node_list)
     # distance_dict = distance_of_nodes(node_list)
@@ -505,32 +499,58 @@ def start():
     # node_list, network = delete_node(9, network)
     # find_latency(packet_list)
     #
-    # packet_list = []
-    #
-    # for i in range(len(node_list)):
-    #     if node_list[i].is_healthy == 1:
-    #         packet_list.append(Packet(100, node_list[i].id, node_list[i],
-    #                                    15, "MIL"))
-    #
     # for test_packet in packet_list:
     #     transmit_packet(test_packet)
     #
-    # for node in node_list:
-    #     print(node.id, end=" ")
-    #
-    # for node in node_list:
-    #     print(node.id)
-    #     print(node.count_receiving_from, "count")
-    #     print([i for i in node.receiving_from])
-    #
+
+
     print(node_list[0].id, node_list[0].routing_priority_ids)
     # while network.is_alive():
+    print("length", len(node_list))
+    print("1","IIIIIIII")
+    packet_list = generate_packets(node_list)
+
+    for test_packet in packet_list:
+        transmit_packet(test_packet)
+        print(test_packet.route_id, "HAHAHA")
+
     node_list, network = calculate_battery(packet_list, node_list, network)
+
+    print("length", len(node_list))
+
+    print("2","IIIIIIIIIIIIII")
+    packet_list = generate_packets(node_list)
+
+    for test_packet in packet_list:
+        transmit_packet(test_packet)
+        print(test_packet.route_id, "HAHAHA")
+
     node_list, network = calculate_battery(packet_list, node_list, network)
+    print("length", len(node_list))
+
+
+    print("3","IIIIIIIIIIIIII")
+    packet_list = generate_packets(node_list)
+
+    for test_packet in packet_list:
+        transmit_packet(test_packet)
+        print(test_packet.route_id, "HAHAHA")
+
     node_list, network = calculate_battery(packet_list, node_list, network)
-    print(len(node_list))
-    print(node_list[-2].routing_priority_ids)
-    print(packet_list[-2].route_id)
+    print("length", len(node_list))
+
+    # for test_packet in packet_list:
+    #    transmit_packet(test_packet)
+    #
+    # packet_list = generate_packets(node)
+    # # for test_packet in packet_list:
+    #
+    #     transmit_packet(test_packet)
+    #     # print(test_packet.route_id, "HAHAHA")
+
+
+    #    print(node_list[-2].routing_priority_ids)
+    # print(packet_list[-2].route_id)
 
     draw_figure(length, breadth, node_list, True)
 
