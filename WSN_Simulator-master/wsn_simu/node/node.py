@@ -85,7 +85,6 @@ class Node(object):
         node.transmit(packet) transmits a packet to
         the node with the highest priority.
         """
-        self.battery_consumed_for_packet(packet)
         if self.is_healthy == 1:
             if packet.type == 100:
                 if self.in_base_range == 1:

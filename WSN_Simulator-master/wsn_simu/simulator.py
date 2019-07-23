@@ -117,7 +117,8 @@ class Network(object):
         alive = False
         for node in self.node_list:
             if node.in_base_range == 1:
-                alive = alive or True
+                if node.is_healthy == 1:
+                    alive = alive or True
 
         return alive
 
@@ -188,7 +189,7 @@ def low_latency_model(node_range, length_of_area, breadth_of_area):
     """
     node_list = []
     node_id = 1
-    initial_value = node_range / np.sqrt(2)
+    initial_value = node_range / np.sqrt(2) -5
     num_nodes_along_length = int(length_of_area / initial_value)
     num_nodes_along_breadth = int(breadth_of_area / initial_value)
 
@@ -401,6 +402,7 @@ def calculate_delay_1(x,node_props):
         delay=(len(x)-1)*1
     return delay
 
+
 def delete_node(node_index, network):
     node_list = network.node_list
     del node_list[node_index]
@@ -413,6 +415,24 @@ def delete_node(node_index, network):
 
     return node_list, network
 
+
+def calculate_battery(packet_list, node_list, network):
+    below_10_percent = []
+    for packet in packet_list:
+        for node in packet.route_node:
+            if node.id == 21:
+                print(packet.route_node[0].id, "LOL")
+            # Replace 2 with Akshobya value(put as parameter in node)
+            node.battery -= 10
+    for node in node_list:
+        if node.battery <= 10:
+            print(node.id, node.battery)
+            below_10_percent.append(node)
+    for node in below_10_percent:
+        node.is_healthy = 0
+        node_list, network = delete_node(node_list.index(node), network)
+
+    return node_list, network
 
 
 def start():
@@ -482,28 +502,34 @@ def start():
     # distance_dict = distance_of_nodes(node_list)
     # sort_route(distance_dict, node_list)
 
-    node_list, network = delete_node(9, network)
-    find_latency(packet_list)
+    # node_list, network = delete_node(9, network)
+    # find_latency(packet_list)
+    #
+    # packet_list = []
+    #
+    # for i in range(len(node_list)):
+    #     if node_list[i].is_healthy == 1:
+    #         packet_list.append(Packet(100, node_list[i].id, node_list[i],
+    #                                    15, "MIL"))
+    #
+    # for test_packet in packet_list:
+    #     transmit_packet(test_packet)
+    #
+    # for node in node_list:
+    #     print(node.id, end=" ")
+    #
+    # for node in node_list:
+    #     print(node.id)
+    #     print(node.count_receiving_from, "count")
+    #     print([i for i in node.receiving_from])
+    #
+    # print(node_list[0].id, node_list[0].routing_priority_ids)
+    while network.is_alive:
+        node_list, network = calculate_battery(packet_list, node_list, network)
+    print(len(node_list))
+    print(node_list[-2].routing_priority_ids)
+    print(packet_list[-2].route_id)
 
-    packet_list = []
-
-    for i in range(len(node_list)):
-        if node_list[i].is_healthy == 1:
-            packet_list.append(Packet(100, node_list[i].id, node_list[i],
-                                       15, "MIL"))
-
-    for test_packet in packet_list:
-        transmit_packet(test_packet)
-
-    for node in node_list:
-        print(node.id, end=" ")
-
-    for node in node_list:
-        print(node.id)
-        print(node.count_receiving_from, "count")
-        print([i for i in node.receiving_from])
-
-    print(node_list[0].id, node_list[0].routing_priority_ids)
     draw_figure(length, breadth, node_list, True)
 
     plt.show()
