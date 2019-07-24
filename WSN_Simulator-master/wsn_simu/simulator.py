@@ -258,6 +258,13 @@ def high_lifetime_model(node_range, length_of_area, breadth_of_area):
                 ct += 1
         if ct == 1:
             actual_node_list.append(node)
+    popping_out = []
+    for node in actual_node_list[:-1:]:
+        if node.x > breadth_of_area or node.y >length_of_area:
+            popping_out.append(node)
+
+    for node in popping_out:
+        actual_node_list.remove(node)
 
     node_id = 1
     for node in actual_node_list[:-1:]:
@@ -313,8 +320,13 @@ def high_reliability_model(node_range, length_of_area, breadth_of_area):
     # print(len(actual_node_list), 'HEEHEHE')
     # print(len(node_list), 'LOLO')
 
-    return actual_node_list
+    popping_out = []
+    for node in actual_node_list[:-1:]:
+        if node.x > breadth_of_area or node.y >length_of_area:
+            popping_out.append(node)
 
+    for node in popping_out:
+        actual_node_list.remove(node)
 
 
     return actual_node_list
@@ -392,12 +404,12 @@ def find_latency(packet_list):
     print(length_of_route)# , "LEEEEEEEEEEEEEEEEEEEEE")
 
     maximum = max(length_of_route)
-    print(maximum)
+    # print(maximum)
     for i in range(len(length_of_route)):
         if length_of_route[i] == maximum:
             max_length_packets.append(packet_list[i])
 
-    print(max_length_packets)
+    # print(max_length_packets)
     return maximum
 
 
@@ -429,27 +441,31 @@ def mote_type(budget, model_type, length_of_area, breadth_of_area):
         node_list3 = high_reliability_model(135, length_of_area, breadth_of_area)
 
     checks = [False, False, False]
+    if model_type is not None:
+        if len(node_list3) * 7700 <= budget:
+            node_type = ["Zolertia Z1", 135]  # Indoor range = 60
+            checks[0] = True
+        elif len(node_list2) * 6000 <= budget:
+            node_type = ["Sky mote", 112]  # Indoor range = 50
+            checks[1] = True
+        elif len(node_list1) * 800 <= budget:
+            node_type = ["Arduino", 90]  # Indoor range = 20-25
+            checks[2] = True
+        else:
+            print("Not enough budget")
+            sys.exit()
 
-    if len(node_list3) * 7700 <= budget:
-        node_type = ["Zolertia Z1", 135]  # Indoor range = 60
-        checks[0] = True
-    elif len(node_list2) * 6000 <= budget:
-        node_type = ["Sky mote", 112]  # Indoor range = 50
-        checks[1] = True
-    elif len(node_list1) * 800 <= budget:
-        node_type = ["Arduino", 90]  # Indoor range = 20-25
-        checks[2] = True
+        if checks[0] is True:
+            return ["Zolertia Z1", 135]
+        elif checks[0] is False and checks[1] is True:
+            return ["Sky mote", 112]
+        else:
+            return ["Arduino", 90]
+        return node_type
+
     else:
-        print("Not enough budget")
-        sys.exit()
-
-    if checks[0] is True:
         return ["Zolertia Z1", 135]
-    elif checks[0] is False and checks[1] is True:
-        return ["Sky mote", 112]
-    else:
-        return ["Arduino", 90]
-    return node_type
+
 
 def calculate_delay_1(x,node_props):
     if node_props[0]=="Zolertia Z1":
@@ -501,7 +517,7 @@ def calculate_battery(packet_list, node_list, network):
     for node in below_10_percent:
         node.is_healthy = 0
         node_list, network = delete_node(node_list.index(node), network)
-    print("LOL2")
+    # print("LOL2")
 
     return node_list, network
 
@@ -511,26 +527,52 @@ def calculate_lifetime(node_list, in_sink_range, network):
         count += 1
     # while count <=2:
         for node in node_list[:-1:]:
-            print([(node.id, node.battery) for node in node_list], "KYU")
-            print()
+            # print([(node.id, node.battery) for node in node_list], "KYU")
+            # print()
             if node.is_healthy == 1:
                 packet = Packet(100, node.id, node, 15, "MIL")
                 transmit_packet(packet)
-                print(packet.route_id)
-                print()
+                # print(packet.route_id)
+                # print()
                 node_list, network = calculate_battery([packet], node_list, network)
                 in_sink_range = node_list[-1].broadcast(node_list[-2::-1])
                 if in_sink_range == []:
                     break
-                print([(node.id, node.battery) for node in node_list], "KYA")
-                print()
-
+                # print([(node.id, node.battery) for node in node_list], "KYA")
+                # print()
+        print(len(node_list))
         in_sink_range = node_list[-1].broadcast(node_list[-2::-1])
-        print([mote.id for mote in in_sink_range], "in_sink_range")
+        # print([mote.id for mote in in_sink_range], "in_sink_range")
 
 
     return count
 
+def farthest_node(node_list):
+    distance_dict = distance_of_nodes(node_list)
+    node = 0
+    dist = 0
+    for mote in distance_dict:
+        if distance_dict[mote] > dist:
+            dist = distance_dict[mote]
+            node = mote
+    return node
+
+def deepesh_latency(node_list, network):
+    backup_node_list = node_list
+    far_node = farthest_node(node_list)
+    far_node_packet = Packet(100, far_node.id, far_node, 15, "MIL")
+    transmit_packet(far_node_packet)
+    for node in far_node_packet.route_node[1:-1]:
+        node_list = backup_node_list
+        for mote in backup_node_list:
+            print(mote.id, end = " ")
+        print("ini")
+        node_list, network = delete_node(node.id - 1, network)
+        for mote in node_list:
+            print(mote.id, end = " ")
+        print("fina")
+        k = find_latency(generate_packets(node_list))
+        print(k,"DEEEEEEEEEEEEEEEEPESH")
 
 
 
@@ -545,16 +587,18 @@ def start():
     # model_type = "low latency model"
     model_type = "high reliability model"
 
-    # node_id = [1, 2, 3, 4]
-    # x = [20, 10, 15, 20]  # x coordinate of the nodes
-    # y = [20, 5, 15, 10]  # y coordinate of the nodes
+    node_id = [1, 2, 3, 4]
+    x = [200, 100, 150, 200]  # x coordinate of the nodes
+    y = [200, 50, 150, 100]  # y coordinate of the nodes
     packet_list = []  # List containing all the packets active in the network
 
     # Making a list that contains all the nodeslen(packet.route_node))
     node_props = mote_type(budget, model_type, length, breadth)
 
-    network = Network(length, breadth, model=model_type,
-                      node_properties=node_props)
+    # network = Network(length, breadth, model=model_type,
+    #                  node_properties=node_props)
+
+    network = Network(length, breadth, node_properties=node_props,node_id=node_id, x=x, y=y)
 
     node_list = network.define()
 
@@ -577,10 +621,9 @@ def start():
     distance_dict = distance_of_nodes(node_list)
     sort_route(distance_dict, node_list)
 
-    for node in node_list:
-        print(node.id, end = " ")
+    # deepesh_latency(node_list, network)
     print()
-    print("lengthhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", len(node_list))
+    # print("lengthhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", len(node_list))
 
     #sensor_list = get_sensors("wsn_simu/Sensor Data.csv")
     #sensor_list = sensor_list.set_index("Name", drop=False)
@@ -595,14 +638,16 @@ def start():
     #
     # for test_packet in packet_list:
     #     transmit_packet(test_packet)
-    #
+
+    packet_list = generate_packets(node_list)
+    for packet in packet_list:
+        transmit_packet(packet)
+    print(find_latency(packet_list))
 
 
-
-
-    print(node_list[0].id, node_list[0].routing_priority_ids)
+    # print(node_list[0].id, node_list[0].routing_priority_ids)
     # while network.is_alive():
-    print("length", len(node_list))
+    # print("length", len(node_list))
 
     # print("1","IIIIIIII")
     # packet_list = generate_packets(node_list)

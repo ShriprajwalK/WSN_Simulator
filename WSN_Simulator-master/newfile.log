@@ -1,6 +1,6 @@
-2019-07-24 09:29:48,377 update_title_pos
-2019-07-24 09:29:48,477 findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=10.0 to DejaVu Sans ('/home/the_daemon_lord/.local/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
-2019-07-24 09:29:48,816 findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=12.0 to DejaVu Sans ('/home/the_daemon_lord/.local/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
-2019-07-24 09:29:48,902 update_title_pos
-2019-07-24 09:32:08,290 update_title_pos
-2019-07-24 09:32:08,635 update_title_pos
+2019-07-24 12:08:34,032 update_title_pos
+2019-07-24 12:08:34,048 findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=10.0 to DejaVu Sans ('/home/the_daemon_lord/.local/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
+2019-07-24 12:08:34,094 findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=12.0 to DejaVu Sans ('/home/the_daemon_lord/.local/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
+2019-07-24 12:08:34,125 update_title_pos
+2019-07-24 12:09:13,854 update_title_pos
+2019-07-24 12:09:13,957 update_title_pos
