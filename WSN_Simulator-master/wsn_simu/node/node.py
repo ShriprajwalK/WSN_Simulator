@@ -48,8 +48,6 @@ class Node(object):
         # what other nodes are in range of each node.
         """node_list = List of nodes that are part of the network.
 
-        Possible improvements:
-        Instead of O(n^2), do something more efficient
         """
         self.in_range_ids = []
         self.in_range_nodes = []
