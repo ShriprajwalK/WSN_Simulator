@@ -1,7 +1,6 @@
 """Node properties are in this file."""
 
 import random
-import logging
 from wsn_simu.packet.packet import Packet
 
 
@@ -11,7 +10,7 @@ class Node(object):
     General properties of a node are defined here.
     """
 
-    def __init__(self, node_id, x, y, node_range, battery=100, rank=1,
+    def __init__(self, node_id, x, y, node_range, battery=3500, rank=1,
                  node_type=None, radio_type=None, sensors=None):
         """Inititialising/Defining the node."""
         self.id = node_id
@@ -71,7 +70,6 @@ class Node(object):
         try:
             dist = distance_bw_nodes(self, self.routing_priority_nodes[0][0])
             self.battery -= 0.001 * packet.message_size * dist
-            logging.info("%d battery %d", self.id, self.battery)
 
         except Exception:
             print("Nothing in range")

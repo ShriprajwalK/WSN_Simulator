@@ -1,18 +1,9 @@
 """A Wireless Sensor Network Simulator to simulate Wireless Sensor Networks."""
 
-# TODO: Refactor the code into different files.
-# => Easy/painful? gotta look into this after everything is done
-
-# TODO: Implement draw packets
-# => Idk.
-
-# TODO: Implement battry life and time taken.
-# => Medium? Deals with threading? Not sure how to go about all this.
-
-# TODO: Implement hexagonal model(reliable) and lifetime model
-# => Hard? Need a general formulae for coordinates
 import pandas as pd
 import sys
+import seaborn as sns
+import random
 # sys.path.append('C:\\Users\Anish\Desktop\MLab\MADHOC\Sim_TBD')
 
 from wsn_simu.node.node import Node, BaseStation, distance_bw_nodes
@@ -23,13 +14,7 @@ from wsn_simu.node.hexagonal_model import generate_centers
 from wsn_simu.packet.packet import Packet
 from wsn_simu.sensors.sensors import Sensor
 
-import logging
 
-
-
-logging.basicConfig(filename="newfile.log",
-                    format='%(asctime)s %(message)s',
-                    filemode='w')
 
 try:
     import matplotlib.pyplot as plt
@@ -40,14 +25,10 @@ try:
 
 except Exception:
     print("Dependencies not installed")
-    logging.error("Dependencies not installed")
+    print("Dependencies not installed")
 
 
 plt.close()  # To close any other plt windows just in case
-
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
 
 
 class Network(object):
@@ -57,7 +38,8 @@ class Network(object):
     """
 
     def __init__(self, length_of_area, breadth_of_area, model=None,
-                 node_properties=None, node_id=None, x=None, y=None):
+                 node_properties=None, node_id=None, x=None, y=None,
+                 frequency=1):
         """Init Network. Defining the network and stuff."""
         self.length_of_area = length_of_area
         self.breadth_of_area = breadth_of_area
@@ -66,6 +48,7 @@ class Network(object):
         self.node_id = node_id
         self.x = x
         self.y = y
+        self.frequency = frequency
 
         self.node_list = []
 
@@ -200,7 +183,13 @@ def low_latency_model(node_range, length_of_area, breadth_of_area):
                                   j * initial_value, node_range))
             node_id += 1
     # Making a sink
-    sink = BaseStation(0, node_list[28].x, node_list[28].y, node_range)
+    distances = []
+    for node in (node_list):
+        distances.append(distance(length_of_area / 2, breadth_of_area / 2,
+                                  node.x, node.y))
+        k=distances.index(min(distances))
+
+    sink = BaseStation(0, node_list[k].x, node_list[k].y, node_range)
     node_list.append(sink)
 
     actual_node_list = []
@@ -227,9 +216,10 @@ def high_lifetime_model(node_range, length_of_area, breadth_of_area):
     node_list = []
     distances = []
     node_id = 1
+    node_range = node_range - 2
 
-    hex_along_l = calculate_p(length_of_area, node_range)
-    hex_along_b = calculate_o(breadth_of_area, node_range)
+    hex_along_l = calculate_p(breadth_of_area, node_range)
+    hex_along_b = calculate_o(length_of_area, node_range)
 
     lattice = hexagonal_lattice_graph(hex_along_b, hex_along_l)
     x, y = generate_hex_mesh(lattice, node_range)
@@ -246,7 +236,19 @@ def high_lifetime_model(node_range, length_of_area, breadth_of_area):
     for i in range(len(inner_x)):
         node_list.append(Node(node_id, inner_x[i], inner_y[i], node_range))
         node_id += 1
+    # for i in range(int(length_of_area/ node_range) + 1):
+    #     node_list.append(Node(node_id, i*node_range - 1, breadth_of_area, node_range))
+    #     node_id += 1
     node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))
+
+
+    popping_out = []
+    for node in node_list[:-1:]:
+        if node.x > length_of_area or node.x < 0 or node.y < 0 or node.y >breadth_of_area:
+            popping_out.append(node)
+
+    for node in popping_out:
+        node_list.remove(node)
 
     actual_node_list = []
     for node in node_list:
@@ -254,17 +256,10 @@ def high_lifetime_model(node_range, length_of_area, breadth_of_area):
         k = node_list.index(node)
         for j in node_list[k+1::]:
             # if node_list[i].x == node_list[j].x == node_list[i].y == node_list[j].y:
-            if node.x == j.x and node.y == j.y:
+            if node.x == j.x and node.y == j.y or distance_bw_nodes(node, j) <= 1:
                 ct += 1
         if ct == 1:
             actual_node_list.append(node)
-    popping_out = []
-    for node in actual_node_list[:-1:]:
-        if node.x > breadth_of_area or node.y >length_of_area:
-            popping_out.append(node)
-
-    for node in popping_out:
-        actual_node_list.remove(node)
 
     node_id = 1
     for node in actual_node_list[:-1:]:
@@ -272,6 +267,9 @@ def high_lifetime_model(node_range, length_of_area, breadth_of_area):
         node_id += 1
     # print(len(actual_node_list), 'HEEHEHE')
     # print(len(node_list), 'LOLO')
+
+    for node in actual_node_list:
+        print(node.id, node.x, node.y)
 
     return actual_node_list
 
@@ -299,6 +297,7 @@ def high_reliability_model(node_range, length_of_area, breadth_of_area):
     for i in range(len(centre_x)):
         node_list.append(Node(node_id, centre_x[i], centre_y[i], node_range))
         node_id += 1
+
     node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))
 
 
@@ -322,7 +321,7 @@ def high_reliability_model(node_range, length_of_area, breadth_of_area):
 
     popping_out = []
     for node in actual_node_list[:-1:]:
-        if node.x > breadth_of_area or node.y >length_of_area:
+        if node.x > breadth_of_area or node.x < 0 or node.y < 0 or node.y >length_of_area:
             popping_out.append(node)
 
     for node in popping_out:
@@ -371,7 +370,6 @@ def transmit_packet(packet):
         packet.route_id.append(0)
 
 
-
 def get_sensors(csv):
     """Get all existing sensors from the csv."""
     return pd.read_csv(csv)
@@ -386,6 +384,7 @@ def get_sensors(csv):
 def distance(x1,y1,x2,y2):
     """Find distance between x1,y1 and x2,y2"""
     return ((x2 - x1)**2 + (y2 - y1)**2)
+
 
 def find_latency(packet_list):
     """Finds the latency of a packet_]ist.
@@ -443,28 +442,28 @@ def mote_type(budget, model_type, length_of_area, breadth_of_area):
     checks = [False, False, False]
     if model_type is not None:
         if len(node_list3) * 7700 <= budget:
-            node_type = ["Zolertia Z1", 135]  # Indoor range = 60
+            node_type = ["Zolertia Z1", 135, 0.9504]  # Indoor range = 60
             checks[0] = True
         elif len(node_list2) * 6000 <= budget:
-            node_type = ["Sky mote", 112]  # Indoor range = 50
+            node_type = ["Sky mote", 112, 0.6205]  # PER BIT Indoor range = 50
             checks[1] = True
         elif len(node_list1) * 800 <= budget:
-            node_type = ["Arduino", 90]  # Indoor range = 20-25
+            node_type = ["Arduino", 90, 0.275]  # Indoor range = 20 - 25
             checks[2] = True
         else:
             print("Not enough budget")
             sys.exit()
 
         if checks[0] is True:
-            return ["Zolertia Z1", 135]
+            return ["Zolertia Z1", 135, 0.9504]
         elif checks[0] is False and checks[1] is True:
-            return ["Sky mote", 112]
+            return ["Sky mote", 112, 0.6205]
         else:
-            return ["Arduino", 90]
+            return ["Arduino", 90, 0.275]
         return node_type
 
     else:
-        return ["Zolertia Z1", 135]
+        return ["Zolertia Z1", 135, 0.9504]
 
 
 def calculate_delay_1(x,node_props):
@@ -509,7 +508,7 @@ def calculate_battery(packet_list, node_list, network):
     for packet in packet_list:
         for node in packet.route_node:
             # Replace 2 with Akshobya value(put as parameter in node)
-            node.battery -= 10
+            node.battery -= network.node_properties[2] + random.randint(0, int(0.05 * network.node_properties[2]))
     for node in node_list:
         if node.battery <= 10:
             # print(node.id, node.battery)
@@ -523,6 +522,9 @@ def calculate_battery(packet_list, node_list, network):
 
 def calculate_lifetime(node_list, in_sink_range, network):
     count = 0
+    to_graph_dict = {}
+    for node in node_list[:-1:]:
+        to_graph_dict[node.id] = [100]
     while in_sink_range != []:
         count += 1
     # while count <=2:
@@ -540,12 +542,15 @@ def calculate_lifetime(node_list, in_sink_range, network):
                     break
                 # print([(node.id, node.battery) for node in node_list], "KYA")
                 # print()
-        print(len(node_list))
+        for mote in node_list[:-1:]:
+            to_graph_dict[mote.id].append(mote.battery)
+
+        # print(len(node_list))
         in_sink_range = node_list[-1].broadcast(node_list[-2::-1])
         # print([mote.id for mote in in_sink_range], "in_sink_range")
 
 
-    return count
+    return count, to_graph_dict
 
 def farthest_node(node_list):
     distance_dict = distance_of_nodes(node_list)
@@ -580,12 +585,12 @@ def start():
     """Start the simulator."""
     budget = 21600000000
     length = 800
-    breadth = 800
+    breadth = 400
 
     # model_type = None
-    # model_type = "high lifetime model"
+    model_type = "high lifetime model"
     # model_type = "low latency model"
-    model_type = "high reliability model"
+    # model_type = "high reliability model"
 
     node_id = [1, 2, 3, 4]
     x = [200, 100, 150, 200]  # x coordinate of the nodes
@@ -595,107 +600,42 @@ def start():
     # Making a list that contains all the nodeslen(packet.route_node))
     node_props = mote_type(budget, model_type, length, breadth)
 
-    # network = Network(length, breadth, model=model_type,
-    #                  node_properties=node_props)
+    network = Network(length, breadth, model=model_type,
+                      node_properties=node_props)
 
-    network = Network(length, breadth, node_properties=node_props,node_id=node_id, x=x, y=y)
+    # network = Network(length, breadth, node_properties=node_props,node_id=node_id, x=x, y=y)
 
     node_list = network.define()
 
     node_list = network.initialize()
     for node in node_list:
         node.broadcast(node_list)
-    # for node in node_list:
-    #     if node.is_healthy == 1:
-    #         print(node.id)for node in node_list:
-        for entry in node.routing_priority_nodes:
-            if entry[0] == node:
-                k = node.routing_priority_nodes.index(entry)
-                del node.routing_priority_nodes[k]
-                del node.routing_priority_ids[k]
-        for nodu in node.in_range_nodes:
-            if nodu == node:
-                j = node.in_range_nodes.index(nodu)
-                del node.in_range_nodes[j]
-                del node.in_range_ids[j]
+
     distance_dict = distance_of_nodes(node_list)
     sort_route(distance_dict, node_list)
 
-    # deepesh_latency(node_list, network)
     print()
-    # print("lengthhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", len(node_list))
-
-    #sensor_list = get_sensors("wsn_simu/Sensor Data.csv")
-    #sensor_list = sensor_list.set_index("Name", drop=False)
-    #sensor = Sensor("DHT 11_T", "Temperature", sensor_list)#
-    # for node in node_list:
-    #     node.broadcast(node_list)
-    # distance_dict = distance_of_nodes(node_list)
-    # sort_route(distance_dict, node_list)
-
-    # node_list, network = delete_node(9, network)
-    # find_latency(packet_list)
-    #
-    # for test_packet in packet_list:
-    #     transmit_packet(test_packet)
 
     packet_list = generate_packets(node_list)
     for packet in packet_list:
         transmit_packet(packet)
+
     print(find_latency(packet_list))
 
-
-    # print(node_list[0].id, node_list[0].routing_priority_ids)
-    # while network.is_alive():
-    # print("length", len(node_list))
-
-    # print("1","IIIIIIII")
-    # packet_list = generate_packets(node_list)
-    #
-    # for test_packet in packet_list:
-    #     transmit_packet(test_packet)
-    #     print(test_packet.route_id, "HAHAHA")
-    #
-    # node_list, network = calculate_battery(packet_list, node_list, network)
-    #
-    # print("length", len(node_list))
-    #
-    # print("2","IIIIIIIIIIIIII")
-    # packet_list = generate_packets(node_list)
-    #
-    # for test_packet in packet_list:
-    #     transmit_packet(test_packet)
-    #
-    #     print(test_packet.route_id, "HAHAHA")
     draw_figure(length, breadth, node_list, True)
 
-    print("Relative lifetime:", calculate_lifetime(node_list, network.in_sink_range, network))
-    # node_list, network = calculate_battery(packet_list, node_list, network)
-    # print("length", len(node_list))
-    #
-    #
-    # print("3","IIIIIIIIIIIIII")
-    # packet_list = generate_packets(node_list)
-    #
-    # for test_packet in packet_list:
-    #     transmit_packet(test_packet)
-    #     print(test_packet.route_id, "HAHAHA")
-    #
-    # node_list, network = calculate_battery(packet_list, node_list, network)
-    # print("length", len(node_list))
+    relative_lifetime, to_graph = calculate_lifetime(node_list, network.in_sink_range, network)
 
-    # for test_packet in packet_list:
-    #    transmit_packet(test_packet)
-    #
-    # packet_list = generate_packets(node)
-    # # for test_packet in packet_list:
-    #
-    #     transmit_packet(test_packet)
-    #     # print(test_packet.route_id, "HAHAHA")
-
-
-    #    print(node_list[-2].routing_priority_ids)
-    # print(packet_list[-2].route_id)
+    print("Relative lifetime:", relative_lifetime)
+    for node in to_graph:
+        if node == 12:
+            while len(to_graph[node]) < relative_lifetime:
+                to_graph[node].append(0)
+            plt.plot(to_graph[node], label=str(node))
+            plt.legend(loc='lower left')
+        plt.xlabel("Number of iterations")
+        plt.ylabel("Battery values")
+        plt.title("Lifetime of each node")
 
     draw_figure(length, breadth, node_list, True)
 
