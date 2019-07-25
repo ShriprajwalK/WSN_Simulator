@@ -268,9 +268,6 @@ def high_lifetime_model(node_range, length_of_area, breadth_of_area):
     # print(len(actual_node_list), 'HEEHEHE')
     # print(len(node_list), 'LOLO')
 
-    for node in actual_node_list:
-        print(node.id, node.x, node.y)
-
     return actual_node_list
 
 
@@ -400,7 +397,7 @@ def find_latency(packet_list):
     for packet in packet_list:
         length_of_route.append(len(packet.route_id))
         # print(packet.route_id)
-    print(length_of_route)# , "LEEEEEEEEEEEEEEEEEEEEE")
+    # print(length_of_route)# , "LEEEEEEEEEEEEEEEEEEEEE")
 
     maximum = max(length_of_route)
     # print(maximum)
@@ -442,28 +439,30 @@ def mote_type(budget, model_type, length_of_area, breadth_of_area):
     checks = [False, False, False]
     if model_type is not None:
         if len(node_list3) * 7700 <= budget:
-            node_type = ["Zolertia Z1", 135, 0.9504]  # Indoor range = 60
+            node_type = ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]  # Indoor range = 60
             checks[0] = True
-        elif len(node_list2) * 6000 <= budget:
-            node_type = ["Sky mote", 112, 0.6205]  # PER BIT Indoor range = 50
+        elif len(node_list2) * 5000 <= budget:
+            node_type = ["Sky mote", 112, 0.6205, 1.08 / 3600]  # PER BIT Indoor range = 50
             checks[1] = True
         elif len(node_list1) * 800 <= budget:
-            node_type = ["Arduino", 90, 0.275]  # Indoor range = 20 - 25
+            node_type = ["Arduino", 90, 0.275, 1.08 / 3600]  # Indoor range = 20 - 25
             checks[2] = True
         else:
             print("Not enough budget")
             sys.exit()
 
         if checks[0] is True:
-            return ["Zolertia Z1", 135, 0.9504]
+            return ["Sky mote", 112, 0.6205, 1.08 / 3600]
+            # return ["Arduino", 90, 0.275, 1.08 / 3600]
+            # return ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]
         elif checks[0] is False and checks[1] is True:
-            return ["Sky mote", 112, 0.6205]
+            return ["Sky mote", 112, 0.6205, 1.08 / 3600]
         else:
-            return ["Arduino", 90, 0.275]
+            return ["Arduino", 90, 0.275, 1.08 / 3600]
         return node_type
 
     else:
-        return ["Zolertia Z1", 135, 0.9504]
+        return ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]
 
 
 def calculate_delay_1(x,node_props):
@@ -527,6 +526,8 @@ def calculate_lifetime(node_list, in_sink_range, network):
         to_graph_dict[node.id] = [100]
     while in_sink_range != []:
         count += 1
+        for node in node_list:
+            node.battery -= network.node_properties[3]
     # while count <=2:
         for node in node_list[:-1:]:
             # print([(node.id, node.battery) for node in node_list], "KYU")
@@ -583,9 +584,9 @@ def deepesh_latency(node_list, network):
 
 def start():
     """Start the simulator."""
-    budget = 21600000000
+    budget = 32339900000
     length = 800
-    breadth = 400
+    breadth = 800
 
     # model_type = None
     model_type = "high lifetime model"
@@ -599,6 +600,7 @@ def start():
 
     # Making a list that contains all the nodeslen(packet.route_node))
     node_props = mote_type(budget, model_type, length, breadth)
+    print(node_props)
 
     network = Network(length, breadth, model=model_type,
                       node_properties=node_props)
@@ -620,7 +622,38 @@ def start():
     for packet in packet_list:
         transmit_packet(packet)
 
-    print(find_latency(packet_list))
+    print("Latency:", find_latency(packet_list))
+
+    # data = [[7901, 3151, 2177],[814, 470, 406], [1023, 739, 763]]
+    #
+    # bars1 = [8, 7, 8]
+    # bars2 = [8, 6, 7]
+    # bars3 = [6, 5, 6]
+    #
+    # barWidth = 0.25
+    #
+    # r1 = np.arange(len(bars1))
+    # r2 = [x + barWidth for x in r1]
+    # r3 = [x + barWidth for x in r2]
+    #
+    # plt.bar(r1, bars1, color='#79aba7', width=barWidth, edgecolor='white', label='Arduino')
+    # plt.bar(r2, bars2, color='#2e72a3', width=barWidth, edgecolor='white', label='Sky')
+    # plt.bar(r3, bars3, color='#1b289e', width=barWidth, edgecolor='white', label='Z1')
+    #
+    # plt.xlabel('Model', fontweight='bold')
+    # plt.ylabel('Number of hops', fontweight='bold')
+    # plt.title("Latency comparison")
+    # plt.xticks([r + barWidth for r in range(len(bars1))], ["Lifetime", "Latency", "Reliability"])
+    #
+    # plt.legend()
+    # plt.show()
+
+
+
+    # sns.catplot(x=data, y=y, col="time", data=df, kind="bar",
+    #             height=4, aspect=.7);
+
+    # fig = plt.bar(data, y, color=sns.color_palette("Blues",3))
 
     draw_figure(length, breadth, node_list, True)
 
@@ -638,5 +671,6 @@ def start():
         plt.title("Lifetime of each node")
 
     draw_figure(length, breadth, node_list, True)
+
 
     plt.show()

@@ -56,7 +56,7 @@ class Node(object):
         self.count_receiving_from = 0
 
         for node in node_list:
-            if distance_bw_nodes(self, node) <= (self.range)**2:
+            if distance_bw_nodes(self, node) <= (self.range)**2 + 1:
                 # Checking distances of each node
                 if node.is_healthy == 1 and node not in self.in_range_nodes:
                     self.in_range_ids.append(node.id)
