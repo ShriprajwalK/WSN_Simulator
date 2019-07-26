@@ -13,7 +13,7 @@ from wsn_simu.node.hexagonal_model import hexagonal_lattice_graph
 from wsn_simu.node.hexagonal_model import generate_centers
 from wsn_simu.packet.packet import Packet
 from wsn_simu.sensors.sensors import Sensor
-
+from wsn_simu import WSN_UI
 
 
 try:
@@ -445,20 +445,18 @@ def mote_type(budget, model_type, length_of_area, breadth_of_area):
             node_type = ["Sky mote", 112, 0.6205, 1.08 / 3600]  # PER BIT Indoor range = 50
             checks[1] = True
         elif len(node_list1) * 800 <= budget:
-            node_type = ["Arduino", 90, 0.275, 1.08 / 3600]  # Indoor range = 20 - 25
+            node_type = ["Arduino", 90, 1.064, 1.08 / 3600]  # Indoor range = 20 - 25
             checks[2] = True
         else:
             print("Not enough budget")
             sys.exit()
 
         if checks[0] is True:
-            return ["Sky mote", 112, 0.6205, 1.08 / 3600]
-            # return ["Arduino", 90, 0.275, 1.08 / 3600]
-            # return ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]
+            return ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]
         elif checks[0] is False and checks[1] is True:
             return ["Sky mote", 112, 0.6205, 1.08 / 3600]
         else:
-            return ["Arduino", 90, 0.275, 1.08 / 3600]
+            return ["Arduino", 90, 1.064, 1.08 / 3600]
         return node_type
 
     else:
@@ -522,10 +520,13 @@ def calculate_battery(packet_list, node_list, network):
 def calculate_lifetime(node_list, in_sink_range, network):
     count = 0
     to_graph_dict = {}
+    lengthu = []
     for node in node_list[:-1:]:
         to_graph_dict[node.id] = [100]
     while in_sink_range != []:
         count += 1
+        lengthu.append(len(node_list))
+
         for node in node_list:
             node.battery -= network.node_properties[3]
     # while count <=2:
@@ -550,8 +551,7 @@ def calculate_lifetime(node_list, in_sink_range, network):
         in_sink_range = node_list[-1].broadcast(node_list[-2::-1])
         # print([mote.id for mote in in_sink_range], "in_sink_range")
 
-
-    return count, to_graph_dict
+    return count, to_graph_dict, lengthu
 
 def farthest_node(node_list):
     distance_dict = distance_of_nodes(node_list)
@@ -582,16 +582,46 @@ def deepesh_latency(node_list, network):
 
 
 
-def start():
-    """Start the simulator."""
-    budget = 32339900000
-    length = 800
-    breadth = 800
+def draw_length(length):
+    with open("length.txt", 'w') as f:
+        for i in length:
+            f.write(str(i) + " ")
 
+
+def run_gui():
+    from wsn_simu import WSN_UI
+    WSN_UI.start_gui()
+    import csv
+    global input_data
+    global x_co_ordinates
+    global y_co_ordinates
+    with open("input_file.csv") as csvinput:
+        s = csv.reader(csvinput)
+        for row in s:
+            break
+        for row in s:
+            input_data = [input for input in row]
+
+        x_co_ordinates = input_data[4].split(';')
+        y_co_ordinates = input_data[5].split(';')
+        x_co_ordinates = list(map(int, x_co_ordinates))
+        y_co_ordinates = list(map(int, y_co_ordinates))
+
+
+
+def start():
+    # run_gui() # Line added by Akshobhya
+    # for i in x_co_ordinates: to check if values are inputted properly
+    #    print(i)
+
+    """Start the simulator."""
+    budget = 216000000000 # int(input_data[2])
+    length = 1000 # int(input_data[0])
+    breadth = 1000 # int(input_data[1])
     # model_type = None
     model_type = "high lifetime model"
     # model_type = "low latency model"
-    # model_type = "high reliability model"
+    # model_type = input_data[3]
 
     node_id = [1, 2, 3, 4]
     x = [200, 100, 150, 200]  # x coordinate of the nodes
@@ -600,10 +630,9 @@ def start():
 
     # Making a list that contains all the nodeslen(packet.route_node))
     node_props = mote_type(budget, model_type, length, breadth)
-    print(node_props)
+    mote = node_props[0]
 
-    network = Network(length, breadth, model=model_type,
-                      node_properties=node_props)
+    network = Network(length, breadth, model=model_type, node_properties=node_props)
 
     # network = Network(length, breadth, node_properties=node_props,node_id=node_id, x=x, y=y)
 
@@ -622,13 +651,14 @@ def start():
     for packet in packet_list:
         transmit_packet(packet)
 
-    print("Latency:", find_latency(packet_list))
+    latency = find_latency(packet_list)
+    print("Latency:", latency)
 
     # data = [[7901, 3151, 2177],[814, 470, 406], [1023, 739, 763]]
     #
-    # bars1 = [8, 7, 8]
-    # bars2 = [8, 6, 7]
-    # bars3 = [6, 5, 6]
+    # bars1 = [2043, 211, 265]
+    # bars2 = [3151, 470, 739]
+    # bars3 = [2177, 406, 763]
     #
     # barWidth = 0.25
     #
@@ -636,13 +666,13 @@ def start():
     # r2 = [x + barWidth for x in r1]
     # r3 = [x + barWidth for x in r2]
     #
-    # plt.bar(r1, bars1, color='#79aba7', width=barWidth, edgecolor='white', label='Arduino')
-    # plt.bar(r2, bars2, color='#2e72a3', width=barWidth, edgecolor='white', label='Sky')
-    # plt.bar(r3, bars3, color='#1b289e', width=barWidth, edgecolor='white', label='Z1')
+    # plt.bar(r1, bars1, color='#0c7d23', width=barWidth, edgecolor='white', label='Arduino')
+    # plt.bar(r2, bars2, color='#8c4307', width=barWidth, edgecolor='white', label='Sky')
+    # plt.bar(r3, bars3, color='#a6992b', width=barWidth, edgecolor='white', label='Z1')
     #
     # plt.xlabel('Model', fontweight='bold')
-    # plt.ylabel('Number of hops', fontweight='bold')
-    # plt.title("Latency comparison")
+    # plt.ylabel('Number of iterations', fontweight='bold')
+    # plt.title("Lifetime comparison")
     # plt.xticks([r + barWidth for r in range(len(bars1))], ["Lifetime", "Latency", "Reliability"])
     #
     # plt.legend()
@@ -657,20 +687,25 @@ def start():
 
     draw_figure(length, breadth, node_list, True)
 
-    relative_lifetime, to_graph = calculate_lifetime(node_list, network.in_sink_range, network)
+    relative_lifetime, to_graph, lengthu = calculate_lifetime(node_list, network.in_sink_range, network)
+
+    draw_length(lengthu)
+
 
     print("Relative lifetime:", relative_lifetime)
     for node in to_graph:
-        if node == 12:
-            while len(to_graph[node]) < relative_lifetime:
-                to_graph[node].append(0)
-            plt.plot(to_graph[node], label=str(node))
-            plt.legend(loc='lower left')
+        while len(to_graph[node]) < relative_lifetime:
+            to_graph[node].append(0)
+        plt.plot(to_graph[node], label=str(node))
+        # plt.legend(loc='lower left')
         plt.xlabel("Number of iterations")
         plt.ylabel("Battery values")
-        plt.title("Lifetime of each node")
+        plt.title("Battery value of each node")
 
     draw_figure(length, breadth, node_list, True)
 
+    a = str(mote) + " " + str(latency) + str(relative_lifetime)
+    with open("results.txt", 'w') as f:
+        f.write(a)
 
     plt.show()
