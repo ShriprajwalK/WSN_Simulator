@@ -13,7 +13,7 @@ from wsn_simu.node.hexagonal_model import hexagonal_lattice_graph
 from wsn_simu.node.hexagonal_model import generate_centers
 from wsn_simu.packet.packet import Packet
 from wsn_simu.sensors.sensors import Sensor
-from wsn_simu import WSN_UI
+#from wsn_simu import WSN_UI
 
 
 try:
@@ -55,12 +55,14 @@ class Network(object):
     def define(self):
         """Define a network. Returns a node_list."""
         if self.model is None:
-            self.number_of_nodes = len(self.node_id)
+            self.number_of_nodes = len(self.x) - 1
+            ct = 1
             for i in range(self.number_of_nodes):
-                self.node_list.append(Node(self.node_id[i], self.x[i],
+                self.node_list.append(Node(ct, self.x[i],
                                            self.y[i], self.node_properties[1]))
+                ct += 1
                 # Appending the nodes to the list
-
+            self.node_list.append(BaseStation(0, self.x[-1], self.y[-1], self.node_properties[1]))
         elif self.model == "low latency model":
             self.node_list = low_latency_model(self.node_properties[1],
                                                self.length_of_area,
@@ -227,19 +229,23 @@ def high_lifetime_model(node_range, length_of_area, breadth_of_area):
     for i in range(len(centre_x)):
         distances.append(distance(length_of_area / 2, breadth_of_area / 2,
                                   centre_x[i], centre_y[i]))
+    try:
+        k = distances.index(min(distances))
+        inner_x, inner_y = draw_ring(centre_x[k], centre_y[k], node_range)
+        for i in range(len(x)):
+            node_list.append(Node(node_id, x[i], y[i], node_range))
+            node_id += 1
+        for i in range(len(inner_x)):
+            node_list.append(Node(node_id, inner_x[i], inner_y[i], node_range))
+            node_id += 1
+        # for i in range(int(length_of_area/ node_range) + 1):
+        #     node_list.append(Node(node_id, i*node_range - 1, breadth_of_area, node_range))
+        #     node_id += 1
+        node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))
 
-    k = distances.index(min(distances))
-    inner_x, inner_y = draw_ring(centre_x[k], centre_y[k], node_range)
-    for i in range(len(x)):
-        node_list.append(Node(node_id, x[i], y[i], node_range))
-        node_id += 1
-    for i in range(len(inner_x)):
-        node_list.append(Node(node_id, inner_x[i], inner_y[i], node_range))
-        node_id += 1
-    # for i in range(int(length_of_area/ node_range) + 1):
-    #     node_list.append(Node(node_id, i*node_range - 1, breadth_of_area, node_range))
-    #     node_id += 1
-    node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))
+    except Exception as e:
+        print("Not enough area for a Wireless Sensor Network with available motes")
+        sys.exit()
 
 
     popping_out = []
@@ -287,16 +293,21 @@ def high_reliability_model(node_range, length_of_area, breadth_of_area):
         distances.append(distance(length_of_area / 2, breadth_of_area / 2,
                                          centre_x[i], centre_y[i]))
 
-    k = distances.index(min(distances))
-    for i in range(len(x)):
-        node_list.append(Node(node_id, x[i], y[i], node_range))
-        node_id += 1
-    for i in range(len(centre_x)):
-        node_list.append(Node(node_id, centre_x[i], centre_y[i], node_range))
-        node_id += 1
+    try:
+        k = distances.index(min(distances))
+        for i in range(len(x)):
+            node_list.append(Node(node_id, x[i], y[i], node_range))
+            node_id += 1
+        for i in range(len(centre_x)):
+            node_list.append(Node(node_id, centre_x[i], centre_y[i], node_range))
+            node_id += 1
 
-    node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))
+        node_list.append(BaseStation(0, centre_x[k], centre_y[k], node_range))
 
+
+    except Exception as e:
+        print("Not enough area for a Wireless Sensor Network with available motes")
+        sys.exit()
 
     actual_node_list = []
     for node in node_list:
@@ -399,7 +410,11 @@ def find_latency(packet_list):
         # print(packet.route_id)
     # print(length_of_route)# , "LEEEEEEEEEEEEEEEEEEEEE")
 
-    maximum = max(length_of_route)
+    try:
+        maximum = max(length_of_route)
+    except Exception as e:
+        print("Not enough area for a Wireless Sensor Network with available motes")
+        sys.exit()
     # print(maximum)
     for i in range(len(length_of_route)):
         if length_of_route[i] == maximum:
@@ -421,6 +436,14 @@ def generate_packets(node_list):
 
 def mote_type(budget, model_type, length_of_area, breadth_of_area):
     """Decide which mote to use depending on budget."""
+    choices = [None, "low latency model", "high lifetime model", "high reliability model"]
+    if model_type not in choices:
+        print("Invalid choice")
+        sys.exit()
+        return 0
+    if model_type is None:
+        return ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]
+
     if model_type == "low latency model":
         node_list1 = low_latency_model(90, length_of_area, breadth_of_area)
         node_list2 = low_latency_model(112, length_of_area, breadth_of_area)
@@ -437,39 +460,35 @@ def mote_type(budget, model_type, length_of_area, breadth_of_area):
         node_list3 = high_reliability_model(135, length_of_area, breadth_of_area)
 
     checks = [False, False, False]
-    if model_type is not None:
-        if len(node_list3) * 7700 <= budget:
-            node_type = ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]  # Indoor range = 60
-            checks[0] = True
-        elif len(node_list2) * 5000 <= budget:
-            node_type = ["Sky mote", 112, 0.6205, 1.08 / 3600]  # PER BIT Indoor range = 50
-            checks[1] = True
-        elif len(node_list1) * 800 <= budget:
-            node_type = ["Arduino", 90, 1.064, 1.08 / 3600]  # Indoor range = 20 - 25
-            checks[2] = True
-        else:
-            print("Not enough budget")
-            sys.exit()
-
-        if checks[0] is True:
-            return ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]
-        elif checks[0] is False and checks[1] is True:
-            return ["Sky mote", 112, 0.6205, 1.08 / 3600]
-        else:
-            return ["Arduino", 90, 1.064, 1.08 / 3600]
-        return node_type
-
+    if len(node_list3) * 7700 <= budget:
+        node_type = ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]  # Indoor range = 60
+        checks[0] = True
+    elif len(node_list2) * 5000 <= budget:
+        node_type = ["Sky mote", 112, 0.6205, 1.08 / 3600]  # PER BIT Indoor range = 50
+        checks[1] = True
+    elif len(node_list1) * 800 <= budget:
+        node_type = ["Arduino", 90, 1.064, 1.08 / 3600]  # Indoor range = 20 - 25
+        checks[2] = True
     else:
+        print("Not enough budget")
+        sys.exit()
+
+    if checks[0] is True:
         return ["Zolertia Z1", 135, 0.9504, 1.08 / 3600]
+    elif checks[0] is False and checks[1] is True:
+        return ["Sky mote", 112, 0.6205, 1.08 / 3600]
+    else:
+        return ["Arduino", 90, 1.064, 1.08 / 3600]
+    return node_type
 
 
 def calculate_delay_1(x,node_props):
-    if node_props[0]=="Zolertia Z1":
-        delay=(len(x)-1)*2.049
-    if node_props[0]=="Sky mote":
-        delay=(len(x)-1)*2.054
-    if node_props[0]=="Arduino":
-        delay=(len(x)-1)*1
+    if node_props[0] == "Zolertia Z1":
+        delay = (len(x) - 1) * 2.049
+    if node_props[0] =="Sky mote":
+        delay = (len(x) - 1) * 2.054
+    if node_props[0] =="Arduino":
+        delay = (len(x) - 1) * 1
     return delay
 
 
@@ -588,6 +607,13 @@ def draw_length(length):
             f.write(str(i) + " ")
 
 
+'''Start of changes by Akshobhya'''
+
+input_data = [None]*9
+x_co_ordinates = []
+y_co_ordinates = []
+
+
 def run_gui():
     from wsn_simu import WSN_UI
     WSN_UI.start_gui()
@@ -606,35 +632,42 @@ def run_gui():
         y_co_ordinates = input_data[5].split(';')
         x_co_ordinates = list(map(int, x_co_ordinates))
         y_co_ordinates = list(map(int, y_co_ordinates))
+        if input_data[3]=="None":
+            input_data[3] = None
+'''end of changes by Akshobhya'''
 
 
 
 def start():
-    # run_gui() # Line added by Akshobhya
-    # for i in x_co_ordinates: to check if values are inputted properly
+    run_gui() # Line added by Akshobhya
+    #for i in x_co_ordinates:
     #    print(i)
 
     """Start the simulator."""
-    budget = 216000000000 # int(input_data[2])
-    length = 1000 # int(input_data[0])
-    breadth = 1000 # int(input_data[1])
+    budget = int(input_data[2])
+    length = int(input_data[0])
+    breadth = int(input_data[1])
+    #print(input_data[3])
     # model_type = None
-    model_type = "high lifetime model"
-    # model_type = "low latency model"
-    # model_type = input_data[3]
+    #model_type = "high lifetime model"
+    #model_type = "low latency model"
+    # model_type = "high reliability model"
+    model_type=input_data[3]
 
     node_id = [1, 2, 3, 4]
-    x = [200, 100, 150, 200]  # x coordinate of the nodes
-    y = [200, 50, 150, 100]  # y coordinate of the nodes
+    x = [i for i in x_co_ordinates]  # x coordinate of the nodes
+    y = [i for i in y_co_ordinates]  # y coordinate of the nodes
     packet_list = []  # List containing all the packets active in the network
 
     # Making a list that contains all the nodeslen(packet.route_node))
     node_props = mote_type(budget, model_type, length, breadth)
     mote = node_props[0]
 
-    network = Network(length, breadth, model=model_type, node_properties=node_props)
+    if model_type is not None:
+        network = Network(length, breadth, model=model_type, node_properties=node_props)
 
-    # network = Network(length, breadth, node_properties=node_props,node_id=node_id, x=x, y=y)
+    else:
+        network = Network(length, breadth, node_properties=node_props, x=x, y=y)
 
     node_list = network.define()
 
@@ -652,6 +685,7 @@ def start():
         transmit_packet(packet)
 
     latency = find_latency(packet_list)
+    print(mote)
     print("Latency:", latency)
 
     # data = [[7901, 3151, 2177],[814, 470, 406], [1023, 739, 763]]

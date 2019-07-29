@@ -132,33 +132,33 @@ class Simulator_UI:
         self.style.map('.', background=[('selected', _compcolor), ('active', _ana2color)])
 
         top.geometry("1366x705+2+0")
-        top.title("WSN Simulator UI")
+        top.title("WSN Simulator")
         top.configure(background="#474747", highlightbackground="#d9d9d9", highlightcolor="black")
         #071E3D
 
         def getting_all_values():
-            print("Getting Values...")
+            #print("Getting Values...")
             writing_to_second_row(0, str(self.length_input.get()))
             writing_to_second_row(2, str(self.breadth_input.get()))
             writing_to_second_row(4, str(self.max_budget.get()))
             writing_to_second_row(6, self.model.get())
             writing_to_second_row(8, self.low_latency_x_coordinate.get())
             writing_to_second_row(10, self.low_latency_y_coordinate.get())
-            # writing_to_second_row(12, self.first_sensor.get())
-            # writing_to_second_row(14, self.second_sensor.get())
-            # writing_to_second_row(16, self.third_sensor.get())
-            print("Written to file.")
-            root.quit()
+            #writing_to_second_row(12, self.first_sensor.get())
+            #writing_to_second_row(14, self.second_sensor.get())
+            #writing_to_second_row(16, self.third_sensor.get())
+            #print("Written to file.")
+            root.destroy()
 
         self.welcome_message = tk.Message(top)
         self.welcome_message.place(relx=0.0, rely=0.0, relheight=0.133, relwidth=0.997)
-        self.welcome_message.configure(text='''WSN Simulator User Interface''', width=1362, background="#19647E", justify='center', highlightbackground="#d9d9d9", highlightcolor="black", font=font13, foreground="#FFC857")
+        self.welcome_message.configure(text='''WSN Simulator''', width=1362, background="#19647E", justify='center', highlightbackground="#d9d9d9", highlightcolor="black", font=font13, foreground="#FFC857")
 
 
         self.dimension_inputs = tk.LabelFrame(top)
         self.dimension_inputs.place(relx=0.0, rely=0.156, relheight=0.149, relwidth=0.996)
-        self.dimension_inputs.configure(text='''Dimension Details''', background="#071E3D", width=1360, relief='groove', highlightbackground="#f0f0f0", borderwidth="3", font=font18, foreground="#ffffff")
-
+        self.dimension_inputs.configure(text='''Dimension Details''', background="#474747", width=1360, relief='groove', highlightbackground="#f0f0f0", borderwidth="3", font=font18, foreground="#ffffff")
+        #071E3D
 
         self.length_input = tk.IntVar()
         self.length_of_the_area = tk.Spinbox(self.dimension_inputs, from_=250.0, to=10000.0, textvariable=self.length_input)
@@ -174,42 +174,43 @@ class Simulator_UI:
 
         self.enter_length_message = tk.Message(self.dimension_inputs)
         self.enter_length_message.place(relx=0.029, rely=0.476, relheight=0.362, relwidth=0.228, bordermode='ignore')
-        self.enter_length_message.configure(text='''Enter the length of the area (in metres)''', width=310, background="#A3BAC3", justify='center', highlightcolor="black", highlightbackground="#d9d9d9", font=font16, foreground="#ff0000")
-
+        self.enter_length_message.configure(text='''Enter the length of the area (in metres)''', width=310, background="#474747", justify='center', highlightcolor="black", highlightbackground="#d9d9d9", font=font16, foreground="#ffffff")
+        #A3BAC3
 
         self.enter_breadth_message = tk.Message(self.dimension_inputs)
         self.enter_breadth_message.place(relx=0.625, rely=0.476, relheight=0.362, relwidth=0.228, bordermode='ignore')
-        self.enter_breadth_message.configure(text='''Enter the breadth of the area (in metres)''', width=310, background="#A3BAC3", justify='center', highlightcolor="black", highlightbackground="#d9d9d9", font=font16, foreground="#ff0000")
-
+        self.enter_breadth_message.configure(text='''Enter the breadth of the area (in metres)''', width=310, background="#474747", justify='center', highlightcolor="black", highlightbackground="#d9d9d9", font=font16, foreground="#ffffff")
+        #A3BAC3
 
         self.budget_input = tk.LabelFrame(top)
         self.budget_input.place(relx=0.0, rely=0.312, relheight=0.177, relwidth=0.996)
-        self.budget_input.configure(relief='groove', width=1360, highlightcolor="black", highlightbackground="#f0f0f0", background="#071E3D", text='''Budget Details''', foreground="#ffffff", borderwidth="3", font=font18)
+        self.budget_input.configure(relief='groove', width=1360, highlightcolor="black", highlightbackground="#f0f0f0", background="#474747", text='''Budget Details''', foreground="#ffffff", borderwidth="3", font=font18)
 
         self.max_budget = tk.IntVar()
         self.maximum_budget = tk.Spinbox(self.budget_input, from_=0.0, to=100000000000.0, textvariable=self.max_budget)
         self.maximum_budget.place(relx=0.64, rely=0.4, relheight=0.384, relwidth=0.114, bordermode='ignore')
-        self.maximum_budget.configure(width=155, justify='center', selectforeground="#2c302e", activebackground="#fff78f", increment="1000.0", insertbackground="black", selectbackground="#c4c4c4", highlightcolor="black", highlightbackground="black", foreground="black", font=font23, disabledforeground="#a3a3a3", buttonbackground="#d9d9d9", background="#FFF78F")
+        self.maximum_budget.configure(width=155, justify='center', selectforeground="#2c302e", activebackground="#fff78f", increment="1000.0", insertbackground="black", selectbackground="#c4c4c4", highlightcolor="black", highlightbackground="black", foreground="black", font=font23, disabledforeground="#a3a3a3", buttonbackground="#d9d9d9", background="#ffffff")
 
 
         self.enter_budget_message = tk.Message(self.budget_input)
         self.enter_budget_message.place(relx=0.191, rely=0.4, relheight=0.384, relwidth=0.419, bordermode='ignore')
-        self.enter_budget_message.configure(text='''Enter the maximum budget of your intended network (in INR)''', width=570, highlightcolor="black", justify='center', background="#C1224F", font=font22, foreground="#EFE6DD", highlightbackground="#d9d9d9")
-
+        self.enter_budget_message.configure(text='''Enter the maximum budget of your intended network (in INR)''', width=570, highlightcolor="black", justify='center', background="#474747", font=font22, foreground="#ffffff", highlightbackground="#d9d9d9")
+        #C1224F
 
         self.wsn_model_inputs = tk.LabelFrame(top)
         self.wsn_model_inputs.place(relx=0.0, rely=0.496, relheight=0.489, relwidth=0.996)
-        self.wsn_model_inputs.configure(background="#071E3D", width=1360, highlightcolor="black", highlightbackground="#f0f0f0", relief='groove', text='''WSN Model Details''', borderwidth="3", font=font18, foreground="#ffffff")
-
+        self.wsn_model_inputs.configure(background="#474747", width=1360, highlightcolor="black", highlightbackground="#f0f0f0", relief='groove', text='''WSN Model Details''', borderwidth="3", font=font18, foreground="#ffffff")
+        #071E3D
 
         self.choose_wsn_model_message = tk.Message(self.wsn_model_inputs)
         self.choose_wsn_model_message.place(relx=0.044, rely=0.145, relheight=0.11, relwidth=0.419, bordermode='ignore')
-        self.choose_wsn_model_message.configure(text='''Choose the WSN model based on your preference''', width=570, background="#DC493A", font=font24, justify='center', foreground="#ffffff", highlightbackground="#d9d9d9", highlightcolor="black")
+        self.choose_wsn_model_message.configure(text='''Choose the WSN model based on your preference''', width=570, background="#474747", font=font22, justify='center', foreground="#ffffff", highlightbackground="#d9d9d9", highlightcolor="black")
+        #DC493A
 
-        # self.model=tk.StringVar()
-        # self.sensor_one = ttk.Combobox(self.wsn_model_inputs, values=["high reliability model","high lifetime model","low latency model","None"], textvariable=self.model)
-        # self.sensor_one.place(relx=0.647, rely=0.145, relheight=0.11, relwidth=0.146, bordermode='ignore')
-        # self.sensor_one.configure(width=223, takefocus="", cursor="fleur", foreground="red", background="green",font=font16, justify='center')
+        self.model=tk.StringVar()
+        self.sensor_one = ttk.Combobox(self.wsn_model_inputs, values=["high reliability model","high lifetime model","low latency model","None"], textvariable=self.model)
+        self.sensor_one.place(relx=0.647, rely=0.145, relheight=0.11, relwidth=0.146, bordermode='ignore')
+        self.sensor_one.configure(width=223, takefocus="", cursor="fleur", foreground="red", background="green",font=font16, justify='center')
 
         """
         self.high_reliability_model_button = tk.Radiobutton(self.wsn_model_inputs)
@@ -229,17 +230,17 @@ class Simulator_UI:
 
         self.low_latency_info = tk.Message(self.wsn_model_inputs)
         self.low_latency_info.place(relx=0.103, rely=0.348, relheight=0.067, relwidth=0.36, bordermode='ignore')
-        self.low_latency_info.configure(text='''Enter the x and y co-ordinates of boundary separated by ; in case of "None" ''', background="#DC493A", justify='center', font=font23, foreground="#ffffff", width=490, highlightbackground="#d9d9d9", highlightcolor="black")
-
+        self.low_latency_info.configure(text='''Enter X/Y co-ordinates separated by ; in case of None''', background="#474747", justify='center', font=font20, foreground="#ffffff", width=490, highlightbackground="#d9d9d9", highlightcolor="black")
+        #DC493A
 
         self.low_latency_model_x_co_ordinate = tk.Message(self.wsn_model_inputs)
         self.low_latency_model_x_co_ordinate.place(relx=0.478, rely=0.348, relheight=0.067, relwidth=0.066, bordermode='ignore')
-        self.low_latency_model_x_co_ordinate.configure(text='''X Co-ordinate''', width=90, background="#d9d9d9", justify='center', font=font10, foreground="#000000", highlightbackground="#d9d9d9", highlightcolor="black")
+        self.low_latency_model_x_co_ordinate.configure(text='''X Co-ordinate''', width=90, background="#474747", justify='center', font=font10, foreground="#ffffff", highlightbackground="#d9d9d9", highlightcolor="black")
 
 
         self.low_latency_model_y_co_ordinate = tk.Message(self.wsn_model_inputs)
         self.low_latency_model_y_co_ordinate.place(relx=0.654, rely=0.348, relheight=0.067, relwidth=0.066, bordermode='ignore')
-        self.low_latency_model_y_co_ordinate.configure(text='''Y Co-ordinate''', width=90, highlightcolor="black", justify='center', highlightbackground="#d9d9d9", background="#d9d9d9",font=font10, foreground="#000000")
+        self.low_latency_model_y_co_ordinate.configure(text='''Y Co-ordinate''', width=90, highlightcolor="black", justify='center', highlightbackground="#d9d9d9", background="#474747",font=font10, foreground="#ffffff")
 
         self.low_latency_x_coordinate = tk.StringVar()
         self.low_latency_model_x_value = tk.Spinbox(self.wsn_model_inputs, from_=0.0, to=10000.0, textvariable=self.low_latency_x_coordinate)
@@ -294,7 +295,7 @@ class Simulator_UI:
 
         self.clear_button = tk.Button(top)
         self.clear_button.place(relx=0.849, rely=0.894, height=44, width=167)
-        self.clear_button.configure(text='''Close''', command=root.destroy, activebackground="#c339ed", activeforeground="white", background="#c339ed", compound='center', disabledforeground="#a3a3a3", font=font28, foreground="#f8ff21", highlightbackground="#d9d9d9", highlightcolor="black", pady="0")
+        self.clear_button.configure(text='''Close''', command=sys.exit, activebackground="#c339ed", activeforeground="white", background="#c339ed", compound='center', disabledforeground="#a3a3a3", font=font28, foreground="#f8ff21", highlightbackground="#d9d9d9", highlightcolor="black", pady="0")
 
 
 #if __name__ == '__main__':
