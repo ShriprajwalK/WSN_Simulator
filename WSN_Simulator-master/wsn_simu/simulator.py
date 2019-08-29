@@ -13,7 +13,7 @@ from wsn_simu.node.hexagonal_model import hexagonal_lattice_graph
 from wsn_simu.node.hexagonal_model import generate_centers
 from wsn_simu.packet.packet import Packet
 from wsn_simu.sensors.sensors import Sensor
-#from wsn_simu import WSN_UI
+from wsn_simu import WSN_UI
 
 
 try:
@@ -24,7 +24,6 @@ try:
     import sys
 
 except Exception:
-    print("Dependencies not installed")
     print("Dependencies not installed")
 
 
@@ -383,12 +382,6 @@ def get_sensors(csv):
     return pd.read_csv(csv)
 
 
-#def get_all_sensor_values(node_list):
-#    """Get all sensor values."""
-#    for node in node_list:
-#        for sensor in node.sensors:
-#            print(sensor.sensed_value)
-
 def distance(x1,y1,x2,y2):
     """Find distance between x1,y1 and x2,y2"""
     return ((x2 - x1)**2 + (y2 - y1)**2)
@@ -615,7 +608,7 @@ y_co_ordinates = []
 
 
 def run_gui():
-    from wsn_simu import WSN_UI
+    #from wsn_simu import WSN_UI
     WSN_UI.start_gui()
     import csv
     global input_data
